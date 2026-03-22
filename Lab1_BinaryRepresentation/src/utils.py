@@ -1,5 +1,8 @@
 from typing import List
 
+def invert_bits(bits: List[int]) -> List[int]:
+    return [1 - bit for bit in bits]
+
 def add_binary_lists(a: List[int], b: List[int]) -> List[int]:
     """
     Performs binary addition of two bit lists (a + b).
@@ -32,3 +35,5 @@ def add_binary_lists(a: List[int], b: List[int]) -> List[int]:
     result.reverse()
 
     return result
+
+
