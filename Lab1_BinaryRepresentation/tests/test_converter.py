@@ -4,7 +4,7 @@ import os
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
 
-from integer.converter import to_direct_code, to_reverse_code
+from integer.converter import to_direct_code, to_reverse_code, to_complementary_code
 from constants import BIT_SIZE, POSITIVE_SIGN, NEGATIVE_SIGN, MAX_VALUE
 
 
@@ -63,6 +63,29 @@ class TestReverseCode(unittest.TestCase):
         expected = [NEGATIVE_SIGN] + [1] * (BIT_SIZE - 2) + [0]
         self.assertEqual(result, expected, "-1 in reverse should be sign bit + all ones except final 0")
 
+class TestComplementaryCode(unittest.TestCase):
 
-    if __name__ == '__main__':
-        unittest.main()
+    def test_positive_number(self):
+        result = to_complementary_code(10)
+        self.assertEqual(result[0], POSITIVE_SIGN)
+        self.assertEqual(result[-4:], [1, 0, 1, 0])
+
+    def test_zero(self):
+        result = to_complementary_code(0)
+        expected = [0] * BIT_SIZE
+        self.assertEqual(result, expected)
+
+    def test_negative_number(self):
+        result = to_complementary_code(-10)
+        self.assertEqual(result[0], NEGATIVE_SIGN)
+        self.assertEqual(result[-4:], [0, 1, 1, 0], "Should be reverse code + 1")
+
+    def test_negative_one(self):
+        """All bits should be 1"""
+        result = to_complementary_code(-1)
+        expected = [NEGATIVE_SIGN] + [1] * (BIT_SIZE - 1)
+        self.assertEqual(result, expected)
+
+
+if __name__ == '__main__':
+    unittest.main()

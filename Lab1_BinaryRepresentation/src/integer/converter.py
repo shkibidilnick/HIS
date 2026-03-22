@@ -1,5 +1,7 @@
 from typing import List
 from src.constants import BIT_SIZE, POSITIVE_SIGN, NEGATIVE_SIGN, MAX_VALUE
+from utils import add_binary_lists
+
 
 def _get_module_bits(decimal_value: int) -> List[int]:
     """
@@ -54,5 +56,24 @@ def to_reverse_code(decimal_value: int) -> List[int]:
         return direct_bits
 
     inverted_value = [1 - bit for bit in direct_bits[1:]]
-
     return [NEGATIVE_SIGN] + inverted_value
+
+def to_complementary_code(decimal_value: int) -> List[int]:
+    """"
+    Converts an integer to Complementary Code.
+    Positive numbers: same as Direct Code.
+    Negative numbers: Reverse Code + 1/
+    """
+    if decimal_value >= 0:
+        return to_direct_code(decimal_value)
+
+    reverse_bits = to_reverse_code(decimal_value)
+
+    # Create "One" as a binary list: [0, 0, ..., 0, 1]
+    one_as_bits = [0] * (BIT_SIZE - 1) + [1]
+
+    return add_binary_lists(reverse_bits, one_as_bits)
+
+        
+
+
