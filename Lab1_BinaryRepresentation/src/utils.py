@@ -3,13 +3,21 @@ from typing import List
 def invert_bits(bits: List[int]) -> List[int]:
     return [1 - bit for bit in bits]
 
+def negate_bits(bits: List[int]) -> List[int]:
+    inverted = invert_bits(bits)
+    negated_value = add_binary_lists(inverted, [1])
+
+    if len(negated_value) > len(bits):
+        return negated_value[-len(bits):]
+
+    return negated_value
+
 def add_binary_lists(a: List[int], b: List[int]) -> List[int]:
     """
     Performs binary addition of two bit lists (a + b).
     Returns a new list. The result length is max(len(a), len(b)) + 1 (potential overflow).
     Handles lists of any length.
     """
-
     max_len = max(len(a), len(b))
 
     a_padded = [0] * (max_len - len(a)) + a

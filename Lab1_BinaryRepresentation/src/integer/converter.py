@@ -65,8 +65,9 @@ def to_reverse_code(decimal_value: int) -> List[int]:
     if decimal_value >= 0:
         return direct_bits
     else:
-        inverted_value = invert_bits(direct_bits[1:])
-        return [NEGATIVE_SIGN] + inverted_value
+        result = direct_bits[:]
+        result[1:] = invert_bits(result[1:])
+        return result
 
 def to_complementary_code(decimal_value: int) -> List[int]:
     """"
@@ -82,11 +83,7 @@ def to_complementary_code(decimal_value: int) -> List[int]:
         return to_direct_code(decimal_value)
 
     reverse_bits = to_reverse_code(decimal_value)
-
-    # Create "One" as a binary list: [0, 0, ..., 0, 1]
-    one_as_bits = [0] * (BIT_SIZE - 1) + [1]
-
-    return add_binary_lists(reverse_bits, one_as_bits)
+    return add_binary_lists(reverse_bits, [1])
 
 def from_complementary_code(bits: List[int]) -> int:
     if bits[0] == POSITIVE_SIGN:

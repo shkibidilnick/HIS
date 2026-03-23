@@ -4,7 +4,8 @@ import os
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
 
-from utils import add_binary_lists
+from utils import add_binary_lists, negate_bits
+
 
 class TestBinaryAddition(unittest.TestCase):
 
@@ -39,6 +40,33 @@ class TestBinaryAddition(unittest.TestCase):
         b = [0, 1, 1]
         result = add_binary_lists(a, b)
         expected = [0, 1, 1, 0]
+        self.assertEqual(result, expected)
+
+
+class TestNegateBits(unittest.TestCase):
+
+    def test_negate_zero(self):
+        """
+        Test negating zero: -0 = 0.
+        00...00 -> Invert -> 11...11 -> Add 1 -> 100...00 (33 bits).
+        Should truncate to 00...00.
+        """
+        zero_bits = [0] * 32
+
+        result = negate_bits(zero_bits)
+
+        # Result should still be 32 bits of zeros
+        expected = [0] * 32
+        self.assertEqual(result, expected, "Negating zero should return zero (truncated)")
+        self.assertEqual(len(result), 32, "Result should maintain 32-bit width")
+
+    def test_negate_positive(self):
+        """Test negating 1"""
+        one_bits = [0] * 31 + [1]  # 00...01
+        result = negate_bits(one_bits)
+
+        # Expected: 11...11 (-1)
+        expected = [1] * 32
         self.assertEqual(result, expected)
 
 if __name__ == '__main__':
