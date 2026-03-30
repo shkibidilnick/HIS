@@ -2,9 +2,11 @@ import unittest
 import sys
 import os
 
+from constants import BIT_SIZE
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
 
-from utils import add_binary_lists, negate_bits
+from utils import add_binary_lists, negate_bits, multiply_binary_lists, delete_leading_zeros
 
 
 class TestBinaryAddition(unittest.TestCase):
@@ -68,6 +70,23 @@ class TestNegateBits(unittest.TestCase):
         # Expected: 11...11 (-1)
         expected = [1] * 32
         self.assertEqual(result, expected)
+
+class TestMulBinLists(unittest.TestCase):
+
+    def test_both_zeros(self):
+        a = [0, 0, 0, 0]
+        b = [0, 0]
+        result = multiply_binary_lists(a, b)
+        expected_result = [0]
+        self.assertEqual(result, expected_result)
+
+class TestDeleteLeadZeros(unittest.TestCase):
+
+    def test_list_zeros(self):
+        a = [0] * BIT_SIZE
+        result = delete_leading_zeros(a)
+        expected_result = [0]
+        self.assertEqual(result, expected_result)
 
 if __name__ == '__main__':
     unittest.main()

@@ -12,6 +12,13 @@ def negate_bits(bits: List[int]) -> List[int]:
 
     return negated_value
 
+def delete_leading_zeros(bits: List[int]) -> List[int]:
+    for i, bit in enumerate(bits):
+        if bit == 1:
+            return bits[i:]
+    # return [0] if all zeros.
+    return [0]
+
 def add_binary_lists(a: List[int], b: List[int]) -> List[int]:
     """
     Performs binary addition of two bit lists (a + b).
@@ -44,4 +51,23 @@ def add_binary_lists(a: List[int], b: List[int]) -> List[int]:
 
     return result
 
+def multiply_binary_lists(a: List[int], b: List[int]) -> List[int]:
+    """
+    Multiplies two lists of bits (magnitudes) using the shift-and-add algorithm.
+    Works with MSB-first format (e.g., [0, 0, 1, 0] is 2).
+    """
+    if all(bit == 0 for bit in a) or all(bit == 0 for bit in b):
+        return [0]
+
+    result = [0]
+    for i in range(len(b)):
+        bit = b[i]
+
+        if bit == 1:
+            shift = len(b) - 1 - i
+            shifted_a = a + [0] * shift
+
+            result = add_binary_lists(result, shifted_a)
+
+    return result
 

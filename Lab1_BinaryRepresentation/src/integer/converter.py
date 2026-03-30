@@ -54,6 +54,17 @@ def to_direct_code(decimal_value: int) -> List[int]:
 
     return full_binary_code
 
+def from_direct_code(bits: List[int]) -> int:
+
+    sign_bit = bits[0]
+    module_bits = bits[1:]
+
+    value = _binary_list_to_int(module_bits)
+    if sign_bit == NEGATIVE_SIGN:
+        return -value
+
+    return value
+
 def to_reverse_code(decimal_value: int) -> List[int]:
     """
     Converts an integer to Reverse Code representation.
