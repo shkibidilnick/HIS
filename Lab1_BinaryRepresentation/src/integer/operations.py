@@ -1,9 +1,10 @@
 from typing import List, Tuple
 
-from integer.converter import to_direct_code, from_direct_code
-from src.constants import BIT_SIZE
-from src.utils import add_binary_lists, multiply_binary_lists, negate_bits, delete_leading_zeros
-from src.integer.converter import to_complementary_code, from_complementary_code
+from constants import NEGATIVE_SIGN
+from integer.converter import to_direct_code, from_direct_code, to_complementary_code, from_complementary_code
+from src.constants import POSITIVE_SIGN, BIT_SIZE, FRACTIONAL_BITS_REQUIRED
+from src.utils import add_binary_lists, multiply_binary_lists, negate_bits, delete_leading_zeros, compare_binary_lists, subtract_binary_lists, binary_list_to_int, binary_fraction_to_float
+
 
 
 def _add_bits_core(a_bits: List[int], b_bits: List[int]) -> Tuple[List[int], bool]:
@@ -65,14 +66,14 @@ def multiply_direct_numbers(a_decimal: int, b_decimal: int) -> Tuple[List[int], 
     result_sign = a_direct[0] ^ b_direct[0]
 
     # module for number, ex. 100..0101 -> 00..0101
-    a_mod_raw = a_direct[1:]
-    b_mod_raw = b_direct[1:]
+    a_mod = a_direct[1:]
+    b_mod = b_direct[1:]
 
     # cut module, ex. 00..0101 -> 101
-    a_mod = delete_leading_zeros(a_mod_raw)
-    b_mod = delete_leading_zeros(b_mod_raw)
+    a_clean = delete_leading_zeros(a_mod)
+    b_clean = delete_leading_zeros(b_mod)
 
-    result_mod = multiply_binary_lists(a_mod, b_mod)
+    result_mod = multiply_binary_lists(a_clean, b_clean)
     max_mod_bits = BIT_SIZE -1
     is_overflow = False
 
@@ -87,3 +88,72 @@ def multiply_direct_numbers(a_decimal: int, b_decimal: int) -> Tuple[List[int], 
     result_decimal = from_direct_code(result_bits)
 
     return result_bits, result_decimal, is_overflow
+
+def divide_direct_numbers(a_decimal: int, b_decimal: int) -> Tuple[List[int], List[int], int, float]:
+    """
+    Performs division using the Restoring Remainder method (Corner Division).
+    1. Take current Remainder R.
+    2. Append next bit of Divisor -> R_new.
+    3. Compare R_new with Divisor D.
+    """
+
+    if b_decimal == 0:
+        raise ZeroDivisionError("Division by zero")
+    if a_decimal == 0:
+        return [0] * BIT_SIZE, [0], POSITIVE_SIGN, 0.0
+
+    a_direct = to_direct_code(a_decimal)
+    b_direct = to_direct_code(b_decimal)
+    result_sign = a_direct[0] ^ b_direct[0]
+
+    dividend_bits = delete_leading_zeros(a_direct[1:])
+    divisor_bits = delete_leading_zeros(b_direct[1:])
+
+    remainder = []
+    int_part_bits = [] # bits for integer part of the result
+
+    for bit in dividend_bits:
+        current_val = remainder + [bit]
+        cmp = compare_binary_lists(current_val, divisor_bits)
+
+        if cmp >= 0:
+            int_part_bits.append(1)
+            remainder = subtract_binary_lists(current_val, divisor_bits)
+        else:
+            int_part_bits.append(0)
+            remainder = current_val
+
+    int_part_bits = delete_leading_zeros(int_part_bits)
+    if not int_part_bits: int_part_bits = [0]
+
+    frac_part_bits = [] # bits for float part of the result
+
+    for _ in range(FRACTIONAL_BITS_REQUIRED):
+        if not remainder or all(b == 0 for b in remainder):
+            break
+
+        current_val = remainder + [0]
+        cmp = compare_binary_lists(current_val, divisor_bits)
+
+        if cmp >= 0:
+            frac_part_bits.append(1)
+            remainder = subtract_binary_lists(current_val, divisor_bits)
+        else:
+            frac_part_bits.append(0)
+            remainder = current_val
+
+    if not frac_part_bits: frac_part_bits = [0]
+
+    int_part_padded = [0] * (BIT_SIZE - 1 - len(int_part_bits)) + int_part_bits
+    result_bits = [result_sign] + int_part_padded
+
+    int_val = binary_list_to_int(int_part_bits)
+    frac_val = binary_fraction_to_float(frac_part_bits)
+
+    final_decimal = int_val + frac_val
+    if result_sign == NEGATIVE_SIGN:
+        final_decimal = -final_decimal
+
+    return result_bits, frac_part_bits, result_sign, final_decimal
+
+

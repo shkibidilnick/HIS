@@ -1,7 +1,7 @@
 from typing import List
 
 from src.constants import BIT_SIZE, POSITIVE_SIGN, NEGATIVE_SIGN, MAX_VALUE, MIN_VALUE
-from utils import invert_bits, add_binary_lists
+from utils import int_to_binary_list, invert_bits, add_binary_lists, binary_list_to_int
 
 
 def _get_module_bits(decimal_value: int) -> List[int]:
@@ -9,32 +9,14 @@ def _get_module_bits(decimal_value: int) -> List[int]:
     Helper function for getting module number in binary view.
     Give number -> get list filled with 0 and 1.
     """
-    module = abs(decimal_value)
-    if module == 0:
-        return [0] * (BIT_SIZE - 1)
 
-    bits = []
-    while module > 0:
-        remainder = module % 2
-        bits.append(remainder)
-        module = module // 2
-    bits.reverse()
-
+    bits = int_to_binary_list(abs(decimal_value))
     padding_size = (BIT_SIZE - 1) - len(bits)
 
     if padding_size > 0:
         bits = [0] * padding_size + bits
 
     return bits
-
-def _binary_list_to_int(bits: List[int]) -> int:
-    """
-    Helper function. Converts a list of bits to an integer.
-    """
-    result = 0
-    for bit in bits:
-        result = result * 2 + bit
-    return result
 
 def to_direct_code(decimal_value: int) -> List[int]:
     """
@@ -59,7 +41,7 @@ def from_direct_code(bits: List[int]) -> int:
     sign_bit = bits[0]
     module_bits = bits[1:]
 
-    value = _binary_list_to_int(module_bits)
+    value = binary_list_to_int(module_bits)
     if sign_bit == NEGATIVE_SIGN:
         return -value
 
@@ -98,11 +80,11 @@ def to_complementary_code(decimal_value: int) -> List[int]:
 
 def from_complementary_code(bits: List[int]) -> int:
     if bits[0] == POSITIVE_SIGN:
-        return _binary_list_to_int(bits[1:])
+        return binary_list_to_int(bits[1:])
 
     inverted_value = invert_bits(bits[1:])
     result_bits = add_binary_lists(inverted_value, [1])
-    decimal_value = _binary_list_to_int(result_bits)
+    decimal_value = binary_list_to_int(result_bits)
     return -decimal_value
 
 

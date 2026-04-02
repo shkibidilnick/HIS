@@ -2,13 +2,11 @@ import unittest
 import sys
 import os
 
-from constants import POSITIVE_SIGN, NEGATIVE_SIGN, MAX_VALUE, MIN_VALUE, BIT_SIZE
-from integer.converter import to_complementary_code, from_complementary_code
-
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
 
-from integer.operations import add_complementary_numbers, subtract_complementary_bits, multiply_direct_numbers
-
+from constants import POSITIVE_SIGN, NEGATIVE_SIGN, MAX_VALUE, MIN_VALUE, BIT_SIZE
+from integer.converter import to_complementary_code
+from integer.operations import add_complementary_numbers, subtract_complementary_bits, multiply_direct_numbers, divide_direct_numbers
 
 class TestIntegerAddition(unittest.TestCase):
 
@@ -139,6 +137,65 @@ class TestIntegerMultiplication(unittest.TestCase):
         bits, val, overflow = multiply_direct_numbers(val_a, val_b)
 
         self.assertTrue(overflow, "Overflow should be detected")
+
+class TestIntegerDivision(unittest.TestCase):
+
+    def test_div_positive_exact(self):
+        """Test 10 / 2 = 5.0 (witch is exact result)"""
+        int_bits, frac_bits, sign, val = divide_direct_numbers(10, 2)
+        self.assertEqual(val, 5.0)
+        expected_int_bits = [POSITIVE_SIGN] + [0] * (BIT_SIZE - 1 - 3) + [1, 0, 1]
+        self.assertEqual(int_bits, expected_int_bits)
+        self.assertEqual(sign, POSITIVE_SIGN)
+        self.assertEqual(frac_bits, [0])
+
+    def test_div_positive_recurring(self):
+        """Test 10 / 3 = 3.(3) (Recurring fraction)"""
+        int_bits, frac_bits, sign, val = divide_direct_numbers(10, 3)
+        self.assertAlmostEqual(val, 10/3, places=5)
+        expected_int_bits = [POSITIVE_SIGN] + [0] * (BIT_SIZE - 1 - 2) + [1, 1]
+        self.assertEqual(int_bits, expected_int_bits)
+        self.assertEqual(sign, POSITIVE_SIGN)
+        expected_frac_start = [0, 1, 0, 1, 0, 1]
+        self.assertEqual(frac_bits[:6], expected_frac_start)
+
+    def test_div_negative_exact(self):
+        int_bits, frac_bits, sign, val = divide_direct_numbers(-10, 2)
+        self.assertEqual(val, -5.0)
+        expected_int_bits = [NEGATIVE_SIGN] + [0] * (BIT_SIZE - 1 - 3) + [1, 0, 1]
+        self.assertEqual(int_bits, expected_int_bits)
+        self.assertEqual(sign, NEGATIVE_SIGN)
+        self.assertEqual(frac_bits, [0])
+
+    def test_div_zero_by_number(self):
+        int_bits, frac_bits, sign, val = divide_direct_numbers(0, 5)
+        self.assertEqual(val, 0.0)
+        self.assertEqual(int_bits, [0] * BIT_SIZE)
+        self.assertEqual(frac_bits, [0])
+
+    def test_div_small_by_large(self):
+        """Test 2 / 10 = 0.2"""
+        int_bits, frac_bits, sign, val = divide_direct_numbers(2, 10)
+        self.assertAlmostEqual(val, 0.2, places=5)
+        self.assertEqual(int_bits, [0] * BIT_SIZE)
+        expected_frac_start = [0, 0, 1, 1, 0, 0, 1, 1]
+        self.assertEqual(frac_bits[:8], expected_frac_start)
+
+    def test_div_by_zero(self):
+        """Test 10 / 0 -> ZeroDivisionError"""
+        with self.assertRaises(ZeroDivisionError):
+            divide_direct_numbers(10, 0)
+
+    def test_div_max_value_boundary(self):
+        """Test MAX / 1 = MAX (Boundary case for 31 bits)"""
+        int_bits, frac_bits, sign, val = divide_direct_numbers(MAX_VALUE, 1)
+
+        self.assertEqual(val, MAX_VALUE)
+        self.assertEqual(sign, POSITIVE_SIGN)
+
+        expected_mag = [1] * (BIT_SIZE - 1)
+        self.assertEqual(int_bits[1:], expected_mag)
+        self.assertEqual(frac_bits, [0])
 
 if __name__ == '__main__':
     unittest.main()
