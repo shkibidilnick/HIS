@@ -86,6 +86,5 @@ class TestComplementaryCode(unittest.TestCase):
         expected = [NEGATIVE_SIGN] + [1] * (BIT_SIZE - 1)
         self.assertEqual(result, expected)
 
-
 if __name__ == '__main__':
     unittest.main()

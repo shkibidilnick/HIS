@@ -158,10 +158,9 @@ def compare_binary_lists(a: List[int], b: List[int]) -> int:
     return 0
 
 def subtract_binary_lists(a: List[int], b: List[int]) -> List[int]:
-
     a_padded, b_padded, max_len = pad_lists_to_equal_length(a, b)
-    neg_b = negate_bits(b_padded)
-    result = add_binary_lists(a_padded, neg_b)
+    negated_b = negate_bits(b_padded)
+    result = add_binary_lists(a_padded, negated_b)
 
     if len(result) > max_len:
         result = result[-max_len:]
