@@ -36,11 +36,25 @@ class ReportFormatter:
             self._format_derivatives(report.third_order_derivatives),
             self._format_heading('Fourth-order derivatives'),
             self._format_derivatives(report.fourth_order_derivatives),
-            self._format_heading('DNF minimization'),
-            self._format_minimization(report.dnf_minimization),
-            self._format_heading('CNF minimization'),
-            self._format_minimization(report.cnf_minimization),
-            self._format_heading('Karnaugh map'),
+            self._format_calculation_method(
+                'DNF minimization (calculation method)',
+                report.dnf_minimization,
+            ),
+            self._format_calculation_tabular_method(
+                'DNF minimization (calculation-tabular method)',
+                report.dnf_minimization,
+            ),
+
+            self._format_calculation_method(
+                'CNF minimization (calculation method)',
+                report.cnf_minimization,
+            ),
+
+            self._format_calculation_tabular_method(
+                'CNF minimization (calculation-tabular method)',
+                report.cnf_minimization,
+            ),
+            self._format_heading('Karnaugh map (tabular method)'),
             self._format_karnaugh_map(report.karnaugh_map),
         ]
         return '\n\n'.join(sections)
@@ -92,17 +106,45 @@ class ReportFormatter:
             lines.append(f'∂/{variable_part}: {derivative.expression}')
         return '\n'.join(lines)
 
-    def _format_minimization(self, result: MinimizationResult) -> str:
-        lines = [f'Result: {result.expression}']
+    @staticmethod
+    def _format_calculation_method(title: str, result) -> str:
+        lines = [
+            title,
+            '-' * len(title),
+            '',
+            f'Result: {result.expression}',
+        ]
         for stage_index, stage in enumerate(result.stages, start=1):
             lines.append(f'Stage {stage_index}:')
             lines.append(f'  input: {stage.input_terms}')
             lines.append(f'  combined: {stage.combined_terms}')
-            if stage.combinations:
-                for combination in stage.combinations:
-                    lines.append(f'  {combination}')
+            for combination in stage.combinations:
+                lines.append(f'  {combination}')
+        return '\n'.join(lines)
+
+    @staticmethod
+    def _format_calculation_tabular_method(title: str, result) -> str:
+        lines = [
+            title,
+            '-' * len(title),
+            '',
+            f'Result: {result.expression}',
+        ]
+        for stage_index, stage in enumerate(result.stages, start=1):
+            lines.append(f'Stage {stage_index}:')
+            lines.append(f'  input: {stage.input_terms}')
+            lines.append(f'  combined: {stage.combined_terms}')
+            for combination in stage.combinations:
+                lines.append(f'  {combination}')
+
         lines.append('Coverage table:')
-        lines.append(self._format_coverage_table(result.coverage_table))
+
+        headers = ['term', *result.coverage_table.headers]
+        rows = []
+        for row_name, row_cells in zip(result.coverage_table.row_names, result.coverage_table.cells):
+            rows.append([row_name, *('X' if cell else '' for cell in row_cells)])
+
+        lines.append(_render_table(headers, rows))
         return '\n'.join(lines)
 
     @staticmethod
