@@ -5,7 +5,6 @@ from constants import (
     FLOAT_MANTISSA_BITS,
     FLOAT_SIGNIFICAND_BITS,
     POSITIVE_SIGN,
-    NEGATIVE_SIGN,
     IEEE_FLOAT_EXP_LIMIT,
     FLOAT_BIAS,
 )

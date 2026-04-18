@@ -116,16 +116,21 @@ class ReportFormatter:
     @staticmethod
     def _format_karnaugh_map(result: KarnaughMapResult | None) -> str:
         if result is None:
-            return 'Karnaugh map is available only for 1..4 variables in this implementation.'
-        headers = ['row/col', *result.column_labels]
+            return 'Karnaugh map is unavailable only when variable count exceeds supported limit.'
+
+        row_variable_count = len(result.variable_order) // 2
+        row_variable_names = ''.join(result.variable_order[:row_variable_count]) or '∅'
+        column_variable_names = ''.join(result.variable_order[row_variable_count:]) or '∅'
+
+        headers = [f'{row_variable_names}\\{column_variable_names}', *result.column_labels]
         rows = [[label, *map(str, values)] for label, values in zip(result.row_labels, result.grid)]
+
         lines = [
             _render_table(headers, rows),
             f'DNF from map: {result.dnf_expression}',
             f'CNF from map: {result.cnf_expression}',
         ]
         return '\n'.join(lines)
-
 
 def _render_table(headers: Sequence[str], rows: Iterable[Sequence[str]]) -> str:
     rows = list(rows)

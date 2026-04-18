@@ -27,9 +27,20 @@ class MinimizationTests(unittest.TestCase):
         self.assertEqual('(c) ∨ (a ∧ b)', report.karnaugh_map.dnf_expression)
         self.assertEqual('(a ∨ c) ∧ (b ∨ c)', report.karnaugh_map.cnf_expression)
 
-    def test_karnaugh_map_is_not_built_for_five_variables(self) -> None:
+    def test_karnaugh_map_is_built_for_five_variables(self) -> None:
         report = self.service.analyze('a|b|c|d|e')
-        self.assertIsNone(report.karnaugh_map)
+        self.assertIsNotNone(report.karnaugh_map)
+        self.assertEqual(('00', '01', '11', '10'), report.karnaugh_map.row_labels)
+        self.assertEqual(
+            ('000', '001', '011', '010', '110', '111', '101', '100'),
+            report.karnaugh_map.column_labels,
+        )
+
+    def test_karnaugh_map_grid_shape_for_five_variables(self) -> None:
+        report = self.service.analyze('a|b|c|d|e')
+        self.assertIsNotNone(report.karnaugh_map)
+        self.assertEqual(4, len(report.karnaugh_map.grid))
+        self.assertTrue(all(len(row) == 8 for row in report.karnaugh_map.grid))
 
 
 if __name__ == '__main__':
